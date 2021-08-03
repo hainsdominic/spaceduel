@@ -1,27 +1,37 @@
 import pygame
 import os
 
+# Assets managers initialization
 pygame.mixer.init()
 pygame.font.init()
 
+# Window constants
 WIDTH, HEIGHT = 900, 500
-WIN = pygame.display.set_mode((WIDTH, HEIGHT))
+MENU_WIDTH, MENU_HEIGHT = 300, 500
 
-pygame.display.set_caption("Space Duel")
+# Window initialization
+WIN = pygame.display.set_mode((MENU_WIDTH, MENU_HEIGHT))
+pygame.display.set_caption("Space Duel Menu")
 
+# Color constants
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 RED = (255, 0, 0)
 YELLOW = (255, 255, 0)
+BLUE = (80, 80, 255)
 
+# Pillar in the center of the game
 BORDER = pygame.Rect(WIDTH // 2 - 5, 0, 10, HEIGHT)
 
+# Importing the sounds
 BULLET_HIT_SOUND = pygame.mixer.Sound(os.path.join("Assets", "grenade.wav"))
 BULLET_FIRE_SOUND = pygame.mixer.Sound(os.path.join("Assets", "gun_silencer.wav"))
 
-HEALTH_FONT = pygame.font.SysFont("freemono", 30)
+# Setting up the fonts
+TITLE_FONT = pygame.font.SysFont("freemono", 30)
 WINNER_FONT = pygame.font.SysFont("freemono", 80)
 
+# Gameplay constants
 FPS = 60
 VEL = 5
 BULLET_VEL = 7
@@ -35,6 +45,7 @@ SPACESHIP_WIDTH, SPACESHIP_HEIGHT = (
 YELLOW_HIT = pygame.USEREVENT + 1
 RED_HIT = pygame.USEREVENT + 2
 
+# Spaceships (players) images importation and parsing
 YELLOW_SPACESHIP_IMAGE = pygame.image.load(
     os.path.join("Assets", "spaceship_yellow.png")
 )
@@ -42,24 +53,32 @@ YELLOW_SPACESHIP = pygame.transform.rotate(
     pygame.transform.scale(YELLOW_SPACESHIP_IMAGE, (SPACESHIP_WIDTH, SPACESHIP_HEIGHT)),
     90,
 )
-
 RED_SPACESHIP_IMAGE = pygame.image.load(os.path.join("Assets", "spaceship_red.png"))
 RED_SPACESHIP = pygame.transform.rotate(
     pygame.transform.scale(RED_SPACESHIP_IMAGE, (SPACESHIP_WIDTH, SPACESHIP_HEIGHT)),
     270,
 )
 
+# Background image
 SPACE = pygame.transform.scale(
     pygame.image.load(os.path.join("Assets", "space.png")), (WIDTH, HEIGHT)
 )
 
+# Facilitates the text drawing
+def draw_text(text, font, color, surface, x, y):
+    textobj = font.render(text, 1, color)
+    textrect = textobj.get_rect()
+    textrect.topleft = (x, y)
+    surface.blit(textobj, textrect)
 
-def draw_window(red, yellow, red_bullets, yellow_bullets, red_health, yellow_health):
+
+# Drawing the game
+def draw_game(red, yellow, red_bullets, yellow_bullets, red_health, yellow_health):
     WIN.blit(SPACE, (0, 0))
     pygame.draw.rect(WIN, BLACK, BORDER)
 
-    red_health_text = HEALTH_FONT.render("Health: " + str(red_health), 1, WHITE)
-    yellow_health_text = HEALTH_FONT.render("Health: " + str(yellow_health), 1, WHITE)
+    red_health_text = TITLE_FONT.render("Health: " + str(red_health), 1, WHITE)
+    yellow_health_text = TITLE_FONT.render("Health: " + str(yellow_health), 1, WHITE)
     WIN.blit(red_health_text, (WIDTH - red_health_text.get_width() - 10, 10))
     WIN.blit(yellow_health_text, (10, 10))
 
@@ -75,6 +94,7 @@ def draw_window(red, yellow, red_bullets, yellow_bullets, red_health, yellow_hea
     pygame.display.update()
 
 
+# Handling player movement
 def yellow_handle_movement(keys_pressed, yellow):
     if keys_pressed[pygame.K_a] and yellow.x - VEL > 0:  # left
         yellow.x -= VEL
@@ -82,9 +102,7 @@ def yellow_handle_movement(keys_pressed, yellow):
         yellow.x += VEL
     if keys_pressed[pygame.K_w] and yellow.y - VEL > 0:  # up
         yellow.y -= VEL
-    if (
-        keys_pressed[pygame.K_s] and yellow.y + VEL + yellow.height < HEIGHT - 15
-    ):  # down
+    if keys_pressed[pygame.K_s] and yellow.y + VEL + yellow.height < HEIGHT - 5:  # down
         yellow.y += VEL
 
 
@@ -95,10 +113,11 @@ def red_handle_movement(keys_pressed, red):
         red.x += VEL
     if keys_pressed[pygame.K_UP] and red.y - VEL > 0:  # up
         red.y -= VEL
-    if keys_pressed[pygame.K_DOWN] and red.y + VEL + red.height < HEIGHT - 15:  # down
+    if keys_pressed[pygame.K_DOWN] and red.y + VEL + red.height < HEIGHT - 5:  # down
         red.y += VEL
 
 
+# Handle bullets movement and collision
 def handle_bullets(yellow_bullets, red_bullets, yellow, red):
     for bullet in yellow_bullets:
         bullet.x += BULLET_VEL
@@ -117,6 +136,7 @@ def handle_bullets(yellow_bullets, red_bullets, yellow, red):
             red_bullets.remove(bullet)
 
 
+# Displaying the winner announcement
 def draw_winner(text):
     draw_text = WINNER_FONT.render(text, 1, WHITE)
     WIN.blit(
@@ -130,7 +150,51 @@ def draw_winner(text):
     pygame.time.delay(5000)
 
 
-def game():
+# Diaplays the main menu
+def main_menu():
+    clock = pygame.time.Clock()
+    while True:
+        clock.tick(FPS)
+        WIN.blit(SPACE, (0, 0), (0, 0, MENU_WIDTH, MENU_HEIGHT))
+
+        draw_text("main menu", TITLE_FONT, WHITE, WIN, 20, 20)
+
+        mx, my = pygame.mouse.get_pos()
+
+        pvp_btn = pygame.Rect(20, 100, 200, 50)
+        pve_btn = pygame.Rect(20, 190, 200, 50)
+
+        pygame.draw.rect(WIN, BLUE, pvp_btn)
+        pygame.draw.rect(WIN, BLUE, pve_btn)
+
+        draw_text("PvP", TITLE_FONT, WHITE, WIN, pvp_btn.x + 10, pvp_btn.y + 10)
+        draw_text("PvE", TITLE_FONT, WHITE, WIN, pve_btn.x + 10, pve_btn.y + 10)
+
+        if pvp_btn.collidepoint((mx, my)):
+            if click:
+                game("pvp")
+
+        if pve_btn.collidepoint((mx, my)):
+            if click:
+                game("pve")
+
+        click = False
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                exit()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1:
+                    click = True
+
+        pygame.display.update()
+
+
+# Diaplays the game, the arg can be "pve" or "pvp". PvP is vs another player and PvE is against an AI
+def game(gamemode):
+    pygame.display.set_mode((WIDTH, HEIGHT))
+    pygame.display.set_caption("Space Duel")
+
     red = pygame.Rect(700, 300, SPACESHIP_WIDTH, SPACESHIP_HEIGHT)
     yellow = pygame.Rect(100, 300, SPACESHIP_WIDTH, SPACESHIP_HEIGHT)
 
@@ -191,13 +255,13 @@ def game():
 
         handle_bullets(yellow_bullets, red_bullets, yellow, red)
 
-        draw_window(red, yellow, red_bullets, yellow_bullets, red_health, yellow_health)
+        draw_game(red, yellow, red_bullets, yellow_bullets, red_health, yellow_health)
 
     game()
 
 
 def main():
-    game()
+    main_menu()
 
 
 if __name__ == "__main__":
