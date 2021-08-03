@@ -1,5 +1,6 @@
 import pygame
 import os
+from bot import bot
 
 # Assets managers initialization
 pygame.mixer.init()
@@ -115,14 +116,6 @@ def red_handle_movement(keys_pressed, red):
         red.y -= VEL
     if keys_pressed[pygame.K_DOWN] and red.y + VEL + red.height < HEIGHT - 5:  # down
         red.y += VEL
-
-
-# Handle the computer player (bot)
-def bot(red, yellow, yellow_bullets, red_bullets):
-    red.x = yellow.x + 600
-    red.y = yellow.y
-
-    return red_bullets
 
 
 # Handle bullets movement and collision
