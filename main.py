@@ -215,6 +215,10 @@ def game(gamemode):
                 exit()
 
             if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    pygame.quit()
+                    exit()
+
                 if event.key == pygame.K_LCTRL and len(yellow_bullets) < MAX_BULLETS:
                     bullet = pygame.Rect(
                         yellow.x + yellow.width,
