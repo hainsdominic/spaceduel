@@ -7,7 +7,7 @@ pygame.font.init()
 WIDTH, HEIGHT = 900, 500
 WIN = pygame.display.set_mode((WIDTH, HEIGHT))
 
-pygame.display.set_caption("Spaceship game")
+pygame.display.set_caption("Space Duel")
 
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
@@ -26,8 +26,12 @@ FPS = 60
 VEL = 5
 BULLET_VEL = 7
 MAX_BULLETS = 3
-SPACESHIP_WIDTH, SPACESHIP_HEIGHT = 55, 40
+SPACESHIP_WIDTH, SPACESHIP_HEIGHT = (
+    48,
+    40,
+)  # Original image: w 500px h 413px, keeping aspect ratio of 1.21
 
+# Events for when a bullet hits a player
 YELLOW_HIT = pygame.USEREVENT + 1
 RED_HIT = pygame.USEREVENT + 2
 
@@ -126,7 +130,7 @@ def draw_winner(text):
     pygame.time.delay(5000)
 
 
-def main():
+def game():
     red = pygame.Rect(700, 300, SPACESHIP_WIDTH, SPACESHIP_HEIGHT)
     yellow = pygame.Rect(100, 300, SPACESHIP_WIDTH, SPACESHIP_HEIGHT)
 
@@ -144,6 +148,7 @@ def main():
             if event.type == pygame.QUIT:
                 run = False
                 pygame.quit()
+                exit()
 
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_LCTRL and len(yellow_bullets) < MAX_BULLETS:
@@ -188,7 +193,11 @@ def main():
 
         draw_window(red, yellow, red_bullets, yellow_bullets, red_health, yellow_health)
 
-    main()
+    game()
+
+
+def main():
+    game()
 
 
 if __name__ == "__main__":
