@@ -32,9 +32,9 @@ TITLE_FONT = pygame.font.SysFont("freemono", 30)
 WINNER_FONT = pygame.font.SysFont("freemono", 80)
 
 # Gameplay constants
-FPS = 60
+FPS = 50
 VEL = 5
-BULLET_VEL = 7
+BULLET_VEL = 9
 MAX_BULLETS = 3
 SPACESHIP_WIDTH, SPACESHIP_HEIGHT = (
     48,
@@ -115,6 +115,14 @@ def red_handle_movement(keys_pressed, red):
         red.y -= VEL
     if keys_pressed[pygame.K_DOWN] and red.y + VEL + red.height < HEIGHT - 5:  # down
         red.y += VEL
+
+
+# Handle the computer player (bot)
+def bot(red, yellow, yellow_bullets, red_bullets):
+    red.x = yellow.x + 600
+    red.y = yellow.y
+
+    return red_bullets
 
 
 # Handle bullets movement and collision
@@ -219,7 +227,7 @@ def game(gamemode):
                     pygame.quit()
                     exit()
 
-                if event.key == pygame.K_LCTRL and len(yellow_bullets) < MAX_BULLETS:
+                if event.key == pygame.K_SPACE and len(yellow_bullets) < MAX_BULLETS:
                     bullet = pygame.Rect(
                         yellow.x + yellow.width,
                         yellow.y + yellow.height // 2 - 2,
@@ -229,7 +237,11 @@ def game(gamemode):
                     yellow_bullets.append(bullet)
                     BULLET_FIRE_SOUND.play()
 
-                if event.key == pygame.K_RCTRL and len(red_bullets) < MAX_BULLETS:
+                if (
+                    event.key == pygame.K_RCTRL
+                    and len(red_bullets) < MAX_BULLETS
+                    and gamemode == "pvp"
+                ):
                     bullet = pygame.Rect(red.x, red.y + red.height // 2 - 2, 10, 5)
                     red_bullets.append(bullet)
                     BULLET_FIRE_SOUND.play()
@@ -255,7 +267,11 @@ def game(gamemode):
 
         keys_pressed = pygame.key.get_pressed()
         yellow_handle_movement(keys_pressed, yellow)
-        red_handle_movement(keys_pressed, red)
+
+        if gamemode == "pvp":
+            red_handle_movement(keys_pressed, red)
+        else:
+            red_bullets = bot(red, yellow, yellow_bullets, red_bullets)
 
         handle_bullets(yellow_bullets, red_bullets, yellow, red)
 
