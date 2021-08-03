@@ -1,6 +1,6 @@
 import pygame
 import os
-from bot import bot
+import random
 
 # Assets managers initialization
 pygame.mixer.init()
@@ -65,6 +65,12 @@ SPACE = pygame.transform.scale(
     pygame.image.load(os.path.join("Assets", "space.png")), (WIDTH, HEIGHT)
 )
 
+bot_up = bool(random.getrandbits(1))
+bot_number_of_moves = 0
+threat = False
+
+BOT_MAX_MOVES = 10
+
 # Facilitates the text drawing
 def draw_text(text, font, color, surface, x, y):
     textobj = font.render(text, 1, color)
@@ -116,6 +122,78 @@ def red_handle_movement(keys_pressed, red):
         red.y -= VEL
     if keys_pressed[pygame.K_DOWN] and red.y + VEL + red.height < HEIGHT - 5:  # down
         red.y += VEL
+
+
+counter = 0
+
+# Handle the computer player (bot)
+def bot(red, yellow, yellow_bullets, red_bullets, keys_pressed):
+    # The bot controls red
+    global bot_up
+    global bot_number_of_moves
+    global threat
+    global counter
+
+    # Dodge bullets
+    # Check all bullets
+    for id, bullet in enumerate(yellow_bullets):
+        if (
+            bullet.y + bullet.height >= red.y and bullet.y <= red.y + red.height
+        ):  # Bullet is heading towards red
+            # Choose a random direction if not on an edge
+            if not red.y - VEL > 0:
+                bot_up = False
+            elif not red.y + VEL + red.height < HEIGHT - 5:
+                bot_up = True
+            elif not threat:
+                bot_up = bool(random.getrandbits(1))
+
+                if len(red_bullets) < MAX_BULLETS:
+                    bullet = pygame.Rect(red.x, red.y + red.height // 2 - 2, 10, 5)
+                    red_bullets.append(bullet)
+                    BULLET_FIRE_SOUND.play()
+
+            threat = True
+
+            if bot_up:  # up
+                red.y -= VEL
+            else:  # down
+                red.y += VEL
+
+        if id == len(yellow_bullets) - 1:
+            threat = False
+
+    if len(yellow_bullets) == 0:
+        threat = False
+
+    if threat:
+        bot_number_of_moves = 0
+
+    if not threat:
+        if not red.y - VEL > 0:
+            bot_up = False
+        elif not red.y + VEL + red.height < HEIGHT - 5:
+            bot_up = True
+        elif bot_number_of_moves > BOT_MAX_MOVES:
+            bot_up = bool(random.getrandbits(1))  # Chooses a random direction
+            bot_number_of_moves = 0
+
+        if red.y - VEL > 0 and bot_up:  # up
+            red.y -= VEL
+            bot_number_of_moves += 1
+        elif red.y + VEL + red.height < HEIGHT - 5:  # down
+            red.y += VEL
+            bot_number_of_moves += 1
+
+        if counter == 30:
+            if len(red_bullets) < MAX_BULLETS:
+                bullet = pygame.Rect(red.x, red.y + red.height // 2 - 2, 10, 5)
+                red_bullets.append(bullet)
+                BULLET_FIRE_SOUND.play()
+            counter = 0
+
+    counter += 1
+    return red_bullets
 
 
 # Handle bullets movement and collision
@@ -202,8 +280,8 @@ def game(gamemode):
     red_bullets = []
     yellow_bullets = []
 
-    red_health = 10
-    yellow_health = 10
+    red_health = 5
+    yellow_health = 5
 
     clock = pygame.time.Clock()
     run = True
@@ -264,7 +342,7 @@ def game(gamemode):
         if gamemode == "pvp":
             red_handle_movement(keys_pressed, red)
         else:
-            red_bullets = bot(red, yellow, yellow_bullets, red_bullets)
+            red_bullets = bot(red, yellow, yellow_bullets, red_bullets, keys_pressed)
 
         handle_bullets(yellow_bullets, red_bullets, yellow, red)
 
