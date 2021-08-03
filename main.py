@@ -261,7 +261,7 @@ def game(gamemode):
 
         draw_game(red, yellow, red_bullets, yellow_bullets, red_health, yellow_health)
 
-    game()
+    game(gamemode)
 
 
 def main():
